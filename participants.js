@@ -157,7 +157,7 @@ var STATS = {
 }
 
 
-function createParticipant (participant) {
+function createParticipant (participant, programData) {
   var firstName = participant['Ticket First Name'] || ''
   var lastName = participant['Ticket Last Name'] || ''
 
@@ -220,7 +220,7 @@ function createParticipant (participant) {
       STATS.conf.tickets[confType].numberFree++
       STATS.conf.tickets[confType].number++
 
-      console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
+      //console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
     } else if (!discount) {
       STATS.conf.tickets[confType].numberRegular++
       STATS.conf.tickets[confType].number++
@@ -287,7 +287,38 @@ function createParticipant (participant) {
     }
   } else if (ticketName === 'Speaker Ticket') {
     categoryName = 'Speaker'
-    sessionInfo = participant['Session']
+    sessionInfo = {}
+
+    var speaker = programData.speakers.find(speaker => 
+      speaker.name == fullName
+    );
+    if (!speaker) {
+      console.log("Can't find session for ", fullName);
+    } else {
+      sessionInfo.social = speaker.socials;
+      var session = Object.values(programData.sessions).find(session =>
+        session.speakers.includes(speaker.id)
+      );
+      if (!session) {
+        console.log("Can't find session for ", fullName);
+      } else {
+        sessionInfo.title = session.title;
+        var timeslot = null;
+        for (const day of programData.schedule) {
+          timeslot = day.timeslots.find(timeslot => [].concat.apply([], timeslot.sessions).includes(session.id));
+          if (timeslot) {
+            sessionInfo.date = day.date;
+            sessionInfo.startTime = timeslot.startTime;
+            break;
+          }
+        }
+        if (!timeslot) {
+          console.log("Can't find timeslot for ", session.id, fullName, sessionInfo.title);
+        }
+      }
+    }
+
+
 
     STATS.conf.people.speakers++
 
@@ -341,12 +372,12 @@ function createParticipant (participant) {
   }
 }
 
-function participants (filename, filterOnType, startingDate) {
+function participants (filename, filterOnType, startingDate, programData) {
   var workbook = XLSX.readFile(filename)
   var worksheet = workbook.Sheets[workbook.SheetNames[0]]
   var participantsRaw = XLSX.utils.sheet_to_json(worksheet)
   var participantsProcessed = participantsRaw.map(function (participant) {
-    return createParticipant(participant)
+    return createParticipant(participant, programData)
   }).filter(function (p) {
     return p.categoryName
   }).filter(function (p) {
@@ -372,7 +403,7 @@ function participants (filename, filterOnType, startingDate) {
 
 
 
-  console.log(JSON.stringify(STATS, undefined, 2))
+  //console.log(JSON.stringify(STATS, undefined, 2))
 
   return participantsProcessed
 }

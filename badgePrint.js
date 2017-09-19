@@ -19,26 +19,27 @@ function printParticipant (doc, participant, side) {
         width: doc.page.width
       })
 
-      sessionInfo = sessionInfo.match(/[^\r\n]+/g)
+      var talkTitle = sessionInfo.title;
+      var talkTime = sessionInfo.date + " " + sessionInfo.startTime;
 
-      if (sessionInfo[0]!='-') {
+      if (talkTitle) {
         doc.font('fonts/roboto-v15-latin_latin-ext-500.ttf')
           .fontSize(24)
           .fillColor('#000000')
-        if (doc.widthOfString(sessionInfo[0]) > width) {
+        if (doc.widthOfString(talkTitle) > width) {
           doc.fontSize(18)
         }
-        doc.text(sessionInfo[0], margin, 190, {
+        doc.text(talkTitle, margin, 190, {
           align: 'center',
           height,
         width})
       }
 
-      if (sessionInfo[1]) {
+      if (talkTime) {
         doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
           .fontSize(18)
           .fillColor('#CBB714')
-          .text(sessionInfo[1], {
+          .text(talkTime, {
             align: 'center',
             height,
           width})
