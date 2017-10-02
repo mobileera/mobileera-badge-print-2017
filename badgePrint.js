@@ -20,7 +20,8 @@ function printParticipant (doc, participant, side) {
       })
 
       var talkTitle = sessionInfo.title;
-      var talkTime = sessionInfo.date + " " + sessionInfo.startTime;
+      var talkTime = sessionInfo.date + ", " + sessionInfo.startTime;
+      var track = sessionInfo.track;
 
       if (talkTitle) {
         doc.font('fonts/roboto-v15-latin_latin-ext-500.ttf')
@@ -37,9 +38,19 @@ function printParticipant (doc, participant, side) {
 
       if (talkTime) {
         doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
-          .fontSize(18)
+          .fontSize(22)
           .fillColor('#CBB714')
           .text(talkTime, {
+            align: 'center',
+            height,
+          width})
+      }
+
+      if (track) {
+        doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
+          .fontSize(18)
+          .fillColor('#00aac6')
+          .text(track, {
             align: 'center',
             height,
           width})

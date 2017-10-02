@@ -10,6 +10,10 @@ var IMAGES = {
   'Sponsor': 'images/badge-print4.png'
 }
 
+var TRACKS = [
+  "Odin", "Freyja", "Thor"
+]
+
 var DIET_STOP_LIST = [
   'meat, shrimps',
   'Food',
@@ -54,20 +58,20 @@ var DIET_STOP_LIST = [
 ]
 
 var TSHIRTS = {
-    'Female XS': 0,
-    'Female S': 0,
-    'Female M': 0,
-    'Female L': 0,
-    'Female XL': 0,
-    'Female XXL': 0,
-    'Male XS': 0,
-    'Male S': 0,
-    'Male M': 0,
-    'Male L': 0,
-    'Male XL': 0,
-    'Male XXL': 0,
-    '-': 0,
-    'number': 0
+  'Female XS': 0,
+  'Female S': 0,
+  'Female M': 0,
+  'Female L': 0,
+  'Female XL': 0,
+  'Female XXL': 0,
+  'Male XS': 0,
+  'Male S': 0,
+  'Male M': 0,
+  'Male L': 0,
+  'Male XL': 0,
+  'Male XXL': 0,
+  '-': 0,
+  'number': 0
 }
 
 var TICKET_TYPES = {
@@ -156,12 +160,16 @@ var STATS = {
   'filteredByDate': 0
 }
 
-
 function createParticipant (participant, programData) {
   var firstName = participant['Ticket First Name'] || ''
   var lastName = participant['Ticket Last Name'] || ''
 
-  var fullName = firstName.trim() + ' ' + lastName.trim()
+  if (firstName.trim() && lastName.trim()) {
+    var fullName = [firstName.trim(), lastName.trim()].join(' ')
+  }else {
+    console.log('Unassigned ticket for ticket ' + participant['Ticket Reference'] + ' . Using order name')
+    var fullName = participant['Order Name']
+  }
 
   var company = participant['Ticket Company Name']
   var sessionInfo = null
@@ -193,7 +201,7 @@ function createParticipant (participant, programData) {
     contactCard += ' of ' + company
   }
 
-  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Discounted') ) {
+  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Discounted')) {
     categoryName = 'Attendee'
 
     var confType = _.camelCase(ticketName)
@@ -204,9 +212,9 @@ function createParticipant (participant, programData) {
     }
 
     if (confType == 'speakerDiscountedTicket') {
-        confType = 'blindBird'
-        discount = 'speakerDiscountedTicket'
-      }
+      confType = 'blindBird'
+      discount = 'speakerDiscountedTicket'
+    }
 
     STATS.conf.tickets.number++
     STATS.conf.tickets.total += ticketPrice
@@ -220,7 +228,7 @@ function createParticipant (participant, programData) {
       STATS.conf.tickets[confType].numberFree++
       STATS.conf.tickets[confType].number++
 
-      //console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
+    // console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
     } else if (!discount) {
       STATS.conf.tickets[confType].numberRegular++
       STATS.conf.tickets[confType].number++
@@ -289,36 +297,34 @@ function createParticipant (participant, programData) {
     categoryName = 'Speaker'
     sessionInfo = {}
 
-    var speaker = programData.speakers.find(speaker => 
-      speaker.name == fullName
-    );
+    var speaker = programData.speakers.find(speaker => speaker.name == fullName
+    )
     if (!speaker) {
-      console.log("Can't find session for ", fullName);
+      console.log("Can't find session for ", fullName)
     } else {
-      sessionInfo.social = speaker.socials;
-      var session = Object.values(programData.sessions).find(session =>
-        session.speakers.includes(speaker.id)
-      );
+      sessionInfo.social = speaker.socials
+      var session = Object.values(programData.sessions).find(session => session.speakers.includes(speaker.id)
+      )
       if (!session) {
-        console.log("Can't find session for ", fullName);
+        console.log("Can't find session for ", fullName)
       } else {
-        sessionInfo.title = session.title;
-        var timeslot = null;
+        sessionInfo.title = session.title
+        var timeslot = null
         for (const day of programData.schedule) {
-          timeslot = day.timeslots.find(timeslot => [].concat.apply([], timeslot.sessions).includes(session.id));
-          if (timeslot) {
-            sessionInfo.date = day.date;
-            sessionInfo.startTime = timeslot.startTime;
+          timeslot = day.timeslots.find(timeslot => [].concat.apply([], timeslot.sessions).includes(session.id))
+          if (timeslot) {  
+            sessionInfo.date = moment(day.date, 'YYYY-MM-DD').format('MMMM Do');
+            sessionInfo.startTime = timeslot.startTime
+            let flatSlots = timeslot.sessions.map(timeslot => {return timeslot[0]})
+            sessionInfo.track = TRACKS[flatSlots.indexOf(session.id)]
             break;
           }
         }
         if (!timeslot) {
-          console.log("Can't find timeslot for ", session.id, fullName, sessionInfo.title);
+          console.log("Can't find timeslot for ", session.id, fullName, sessionInfo.title)
         }
       }
     }
-
-
 
     STATS.conf.people.speakers++
 
@@ -368,8 +374,7 @@ function createParticipant (participant, programData) {
     categoryName,
     ticketName,
     modifiedDate,
-    twitter
-  }
+  twitter}
 }
 
 function participants (filename, filterOnType, startingDate, programData) {
@@ -401,9 +406,7 @@ function participants (filename, filterOnType, startingDate, programData) {
     return a.fullName.localeCompare(b.fullName)
   })
 
-
-
-  //console.log(JSON.stringify(STATS, undefined, 2))
+  // console.log(JSON.stringify(STATS, undefined, 2))
 
   return participantsProcessed
 }
