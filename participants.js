@@ -7,7 +7,7 @@ var IMAGES = {
   'Trainee': 'images/badge-print.png',
   'Speaker': 'images/badge-print2.png',
   'Organizer': 'images/badge-print3.png',
-  'Sponsor': 'images/badge-print4.png'
+  'Volunteer': 'images/badge-print4.png'
 }
 
 var TRACKS = [
@@ -89,6 +89,8 @@ var STATS = {
       'earlyBird': Object.assign({}, TICKET_TYPES),
       'lateBird': Object.assign({}, TICKET_TYPES),
       'studentPass': Object.assign({}, TICKET_TYPES),
+      'sponsorTicket': Object.assign({}, TICKET_TYPES),
+      'speakerTicket': Object.assign({}, TICKET_TYPES),
       'total': 0,
       'number': 0
     },
@@ -96,7 +98,6 @@ var STATS = {
       'attendees': 0,
       'organizers': 0,
       'speakers': 0,
-      'sponsors': 0,
       'number': 0
     },
     'diet': {
@@ -139,7 +140,6 @@ var STATS = {
       'attendees': 0,
       'organizers': 0,
       'speakers': 0,
-      'sponsors': 0,
       'number': 0
     },
     'diet': {
@@ -151,7 +151,6 @@ var STATS = {
     'attendees': Object.assign({}, TSHIRTS),
     'organizers': Object.assign({}, TSHIRTS),
     'speakers': Object.assign({}, TSHIRTS),
-    'sponsors': Object.assign({}, TSHIRTS),
     'black': Object.assign({}, TSHIRTS),
     'white': Object.assign({}, TSHIRTS),
     'number': 0
@@ -163,6 +162,8 @@ var STATS = {
 function createParticipant (participant, programData) {
   var firstName = participant['Ticket First Name'] || ''
   var lastName = participant['Ticket Last Name'] || ''
+
+  var crewType = participant['Crew type'] || ''
 
   if (firstName.trim() && lastName.trim()) {
     var fullName = [firstName.trim(), lastName.trim()].join(' ')
@@ -201,7 +202,7 @@ function createParticipant (participant, programData) {
     contactCard += ' of ' + company
   }
 
-  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Discounted')) {
+  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Discounted') || ticketName.includes('Sponsor') || fullName == 'Erik Rose Johnsen' /* Client on stage */) {
     categoryName = 'Attendee'
 
     var confType = _.camelCase(ticketName)
@@ -228,7 +229,7 @@ function createParticipant (participant, programData) {
       STATS.conf.tickets[confType].numberFree++
       STATS.conf.tickets[confType].number++
 
-    // console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
+    console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
     } else if (!discount) {
       STATS.conf.tickets[confType].numberRegular++
       STATS.conf.tickets[confType].number++
@@ -276,7 +277,7 @@ function createParticipant (participant, programData) {
       STATS.workshops.diet.number++
     }
   } else if (ticketName === 'Crew ticket') {
-    categoryName = participant['Crew type']
+    categoryName = ( participant['Crew type'] == 'Organizer' ) ? participant['Crew type'] : 'Volunteer'
 
     STATS.conf.people.organizers++
 
@@ -297,6 +298,8 @@ function createParticipant (participant, programData) {
     categoryName = 'Speaker'
     sessionInfo = {}
 
+    STATS.conf.tickets['speakerTicket'].numberFree++
+
     var speaker = programData.speakers.find(speaker => speaker.name == fullName
     )
     if (!speaker) {
@@ -313,7 +316,7 @@ function createParticipant (participant, programData) {
         for (const day of programData.schedule) {
           timeslot = day.timeslots.find(timeslot => [].concat.apply([], timeslot.sessions).includes(session.id))
           if (timeslot) {  
-            sessionInfo.date = moment(day.date, 'YYYY-MM-DD').format('MMMM Do');
+            sessionInfo.date = moment(day.date, 'YYYY-MM-DD').format('dddd'); //MMMM Do
             sessionInfo.startTime = timeslot.startTime
             let flatSlots = timeslot.sessions.map(timeslot => {return timeslot[0]})
             sessionInfo.track = TRACKS[flatSlots.indexOf(session.id)]
@@ -341,24 +344,6 @@ function createParticipant (participant, programData) {
       STATS.conf.diet.list.push(diet)
       STATS.conf.diet.number++
     }
-  } else if (ticketName.includes('Sponsor')) {
-    categoryName = 'Sponsor'
-
-    STATS.conf.people.sponsors++
-
-    STATS.conf.people.number++
-
-    STATS.tshirts.sponsors[tShirt]++
-    STATS.tshirts.sponsors.number++
-    STATS.tshirts.number++
-
-    STATS.tshirts.black[tShirt]++
-    STATS.tshirts.black.number++
-
-    if (diet) {
-      STATS.conf.diet.list.push(diet)
-      STATS.conf.diet.number++
-    }
   } else {
     console.log('===== Unknown category for ticket ' + participant['Ticket'])
   }
@@ -374,7 +359,8 @@ function createParticipant (participant, programData) {
     categoryName,
     ticketName,
     modifiedDate,
-  twitter}
+    twitter,
+    crewType}
 }
 
 function participants (filename, filterOnType, startingDate, programData) {
@@ -406,7 +392,7 @@ function participants (filename, filterOnType, startingDate, programData) {
     return a.fullName.localeCompare(b.fullName)
   })
 
-  // console.log(JSON.stringify(STATS, undefined, 2))
+  console.log(JSON.stringify(STATS, undefined, 2))
 
   return participantsProcessed
 }

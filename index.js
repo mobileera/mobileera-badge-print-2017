@@ -3,7 +3,7 @@ var badgePrint = require('./badgePrint');
 var fs = require('fs');
 var moment = require('moment');
 var argv = require('yargs')
-    .usage('Usage: $0 --file [string] --programdata [file] --category [Attendee,Trainee,Organizer,Sponsor,Speaker] --date [31.01.2017]')
+    .usage('Usage: $0 --file [string] --programdata [file] --category [Attendee,Trainee,Organizer,Volunteer,Speaker] --date [31.01.2017]')
     .argv;
 
 var category = argv.category || 'Attendee'

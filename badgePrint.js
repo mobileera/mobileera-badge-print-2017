@@ -77,7 +77,7 @@ function printParticipant (doc, participant, side) {
       doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
         .fontSize(18)
         .fillColor('#00aac6')
-        .text('October 5th, 10:00-17:00', {
+        .text('October 5th, 09:00-17:00', {
           align: 'center',
           height,
         width})
@@ -85,7 +85,7 @@ function printParticipant (doc, participant, side) {
       doc.font('fonts/roboto-v15-latin_latin-ext-300.ttf')
         .fontSize(18)
         .fillColor('#CBB714')
-        .text('\nLunch: 12:30-13:30', {
+        .text('\nLunch: 12:00-13:00', {
           align: 'center',
           height,
         width})
@@ -157,7 +157,7 @@ function printParticipant (doc, participant, side) {
     doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
       .fontSize(18)
       .fillColor('#FFFFFF')
-    doc.text(participant.categoryName, margin, 400, {
+    doc.text(participant.crewType || participant.categoryName, margin, 400, {
       align: 'center',
       height,
     width})
@@ -201,7 +201,7 @@ function blankBadgePrint (count, filename, category) {
     'Trainee': 'images/badge-print.png',
     'Speaker': 'images/badge-print2.png',
     'Organizer': 'images/badge-print3.png',
-    'Sponsor': 'images/badge-print4.png'
+    'Volunteer': 'images/badge-print4.png'
   }
 
   console.log('Started creating ' + filename + '...')
