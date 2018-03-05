@@ -12,34 +12,35 @@ function printParticipant (doc, participant, side) {
   var categoryName = participant.categoryName
   var ticketName = participant.ticketName
 
+
   if ((categoryName === 'Speaker' && sessionInfo && side === 'back') || (categoryName === 'Trainee' && side === 'back')) {
     if (categoryName === 'Speaker') {
-      doc.image('images/badge-print2.png', 0, 0, {
+      doc.image('images/badge-print3.png', 0, 0, {
         height,
         width: doc.page.width
       })
 
-      var talkTitle = sessionInfo.title;
-      var talkTime = sessionInfo.date + ", " + sessionInfo.startTime;
-      var track = sessionInfo.track;
+      var talkTitle = sessionInfo.title
+      var talkTime = sessionInfo.date + ', ' + sessionInfo.startTime
+      var track = sessionInfo.track
 
       if (talkTitle) {
-        doc.font('fonts/roboto-v15-latin_latin-ext-500.ttf')
-          .fontSize(24)
-          .fillColor('#000000')
+        doc.font('fonts/Oswald/Oswald-Bold.ttf')
+          .fontSize(30)
+          .fillColor('#0d1130')
         if (doc.widthOfString(talkTitle) > width) {
-          doc.fontSize(18)
+          doc.fontSize(24)
         }
-        doc.text(talkTitle, margin, 190, {
+        doc.text(talkTitle, margin, 120, {
           align: 'center',
           height,
         width})
       }
 
       if (talkTime) {
-        doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
+        doc.font('fonts/Oswald/Oswald-Regular.ttf')
           .fontSize(22)
-          .fillColor('#CBB714')
+          .fillColor('#e46025')
           .text(talkTime, {
             align: 'center',
             height,
@@ -47,120 +48,120 @@ function printParticipant (doc, participant, side) {
       }
 
       if (track) {
-        doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
+        doc.font('fonts/Oswald/Oswald-Bold.ttf')
           .fontSize(18)
-          .fillColor('#00aac6')
+          .fillColor('#2556a6')
           .text(track, {
             align: 'center',
             height,
           width})
       }
     } else {
-      doc.image('images/badge-print.png', 0, 0, {
+      doc.image('images/badge-print4.png', 0, 0, {
         height,
         width: doc.page.width
       })
 
       workshopName = ticketName.substring(10)
 
-      doc.font('fonts/roboto-v15-latin_latin-ext-500.ttf')
-        .fontSize(24)
-        .fillColor('#000000')
+      doc.font('fonts/Oswald/Oswald-Bold.ttf')
+        .fontSize(30)
+        .fillColor('#0d1130')
       if (doc.widthOfString(workshopName) > width) {
-        doc.fontSize(16)
+        doc.fontSize(24)
       }
-      doc.text(workshopName, margin, 190, {
+      doc.text(workshopName, margin, 120, {
         align: 'center',
         height,
       width})
 
-      doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
+      doc.font('fonts/Oswald/Oswald-Bold.ttf')
         .fontSize(18)
-        .fillColor('#00aac6')
-        .text('October 5th, 09:00-17:00', {
-          align: 'center',
-          height,
-        width})
-
-      doc.font('fonts/roboto-v15-latin_latin-ext-300.ttf')
-        .fontSize(18)
-        .fillColor('#CBB714')
-        .text('\nLunch: 12:00-13:00', {
+        .fillColor('#2556a6')
+        .text('February 28th, 09:00-17:00', {
           align: 'center',
           height,
         width})
     }
 
-    doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
-      .fontSize(18)
-      .fillColor('#FFFFFF')
-    doc.text(participant.categoryName, margin, 400, {
-      align: 'center',
-      height,
-    width})
+
   } else {
     doc.image(participant.image, 0, 0, {
       height,
       width: doc.page.width
     })
 
-    var qrWidth = 70
+/*     var qrWidth = 70
     doc.image(
       qr.imageSync(participant.contactCard, {
         type: 'png'
       }),
-      (doc.page.width - 210 - qrWidth) / 2, height - 100 - qrWidth, {
+      (doc.page.width - 210 - qrWidth) / 2, height - 50 - qrWidth, {
         width: qrWidth
-      })
+      })  */
 
-    doc.font('fonts/roboto-v15-latin_latin-ext-500.ttf')
-      .fontSize(36)
-      .fillColor('#000000')
-    if (doc.widthOfString(participant.fullName) > width) {
-      doc.fontSize(30)
-      if (doc.widthOfString(participant.fullName) > width) {
-        doc.fontSize(26)
+    // First name
+    doc.font('fonts/Oswald/Oswald-Bold.ttf')
+      .fontSize(48)
+      .fillColor('#0d1130')
+    if (doc.widthOfString(participant.firstName) > width) {
+      doc.fontSize(40)
+      if (doc.widthOfString(participant.firstName) > width) {
+        doc.fontSize(36)
       }
     }
 
     doc
-      .text(participant.fullName, margin, 190, {
+      .text(participant.firstName, margin, 110, {
         align: 'center',
         height,
       width})
+
+    // Last name
+
+    doc.font('fonts/Oswald/Oswald-Bold.ttf')
+      .fontSize(24)
+      .fillColor('#0d1130')
+    if (doc.widthOfString(participant.lastName) > width) {
+      doc.fontSize(20)
+      if (doc.widthOfString(participant.lastName) > width) {
+        doc.fontSize(18)
+      }
+    }
+
+    doc
+      .text(participant.lastName,  {
+        align: 'center',
+        height,
+      width})
+
+      // Company
+
     if (participant.company) {
-      doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
-        .fontSize(14)
-        .fillColor('#00aac6')
+      doc.font('fonts/Oswald/Oswald-Regular.ttf')
+        .fontSize(18)
+        .fillColor('#2556a6')
       if (doc.widthOfString(participant.company) > width) {
         doc.fontSize(12)
         if (doc.widthOfString(participant.company) > width) {
           doc.fontSize(10)
         }
       }
-      doc.text(participant.company, {
+      doc.text(participant.company, margin, 215, {
         align: 'center',
         height,
       width})
     }
 
-    if (participant.twitter) {
-      doc.font('fonts/roboto-v15-latin_latin-ext-300.ttf')
-        .fontSize(24)
-        .fillColor('#CBB714')
-      doc.text(participant.twitter, 100, 285, {
+    if (participant.twitter && participant.twitter!='@') {
+      doc.font('fonts/Oswald/Oswald-Regular.ttf')
+        .fontSize(22)
+        .fillColor('#e46025')
+      doc.text(participant.twitter, 15, 250, {
         align: 'left',
         height,
       width})
     }
-
-    doc.font('fonts/roboto-v15-latin_latin-ext-regular.ttf')
-      .fontSize(18)
-      .fillColor('#FFFFFF')
-    doc.text(participant.crewType || participant.categoryName, margin, 400, {
-      align: 'center',
-      height,
-    width})
   }
 }
 
@@ -198,10 +199,9 @@ function badgePrint (participants, filename) {
 function blankBadgePrint (count, filename, category) {
   var IMAGES = {
     'Attendee': 'images/badge-print.png',
-    'Trainee': 'images/badge-print.png',
-    'Speaker': 'images/badge-print2.png',
-    'Organizer': 'images/badge-print3.png',
-    'Volunteer': 'images/badge-print4.png'
+    'Trainee': 'images/badge-print4.png',
+    'Speaker': 'images/badge-print3.png',
+    'Crew': 'images/badge-print2.png'
   }
 
   console.log('Started creating ' + filename + '...')

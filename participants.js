@@ -4,14 +4,13 @@ var moment = require('moment')
 
 var IMAGES = {
   'Attendee': 'images/badge-print.png',
-  'Trainee': 'images/badge-print.png',
-  'Speaker': 'images/badge-print2.png',
-  'Organizer': 'images/badge-print3.png',
-  'Volunteer': 'images/badge-print4.png'
+  'Trainee': 'images/badge-print4.png',
+  'Speaker': 'images/badge-print3.png',
+  'Crew': 'images/badge-print2.png'
 }
 
 var TRACKS = [
-  "Odin", "Freyja", "Thor"
+  'Bifrost', 'Valhalla', 'Vikings Cafe'
 ]
 
 var DIET_STOP_LIST = [
@@ -53,8 +52,10 @@ var DIET_STOP_LIST = [
   'none',
   'T',
   'no :)',
-  'No restrictions'
-
+  'No restrictions',
+  'Thanks for the effort, see you in the conference!',
+  'you cool',
+  '🍗🍖🥓'
 ]
 
 var TSHIRTS = {
@@ -70,6 +71,8 @@ var TSHIRTS = {
   'Male L': 0,
   'Male XL': 0,
   'Male XXL': 0,
+  'Male XXXL': 0,
+  'Male XXXXL': 0,
   '-': 0,
   'number': 0
 }
@@ -85,10 +88,10 @@ var TICKET_TYPES = {
 var STATS = {
   'conf': {
     'tickets': {
-      'blindBird': Object.assign({}, TICKET_TYPES),
+      'regularBird': Object.assign({}, TICKET_TYPES),
       'earlyBird': Object.assign({}, TICKET_TYPES),
       'lateBird': Object.assign({}, TICKET_TYPES),
-      'studentPass': Object.assign({}, TICKET_TYPES),
+      'student': Object.assign({}, TICKET_TYPES),
       'sponsorTicket': Object.assign({}, TICKET_TYPES),
       'speakerTicket': Object.assign({}, TICKET_TYPES),
       'total': 0,
@@ -96,8 +99,9 @@ var STATS = {
     },
     'people': {
       'attendees': 0,
-      'organizers': 0,
+      'crew': 0,
       'speakers': 0,
+      'trainees': 0,
       'number': 0
     },
     'diet': {
@@ -105,7 +109,7 @@ var STATS = {
       'number': 0
     },
     'referrer': {
-      "I'm Mobile Era 2016 participant": 0,
+      "I'm ngVikings 2017 participant": 0,
       'Twitter': 0,
       'Facebook': 0,
       'Meetup': 0,
@@ -117,29 +121,36 @@ var STATS = {
   },
   'workshops': {
     'tickets': {
-      'WORKSHOP: Kotlin for Java developers': {
+      'Workshop: Advanced Angular for Enterprise Applications by Manfred Steyer': {
         'total': 0,
         'number': 0
       },
-      'WORKSHOP: Building Cross Platform Native Mobile Apps using React Native': {
+      'Workshop: Angular Workshop: From Zero To Viking in 1 day! by Laurent Duveau': {
         'total': 0,
         'number': 0
       },
-      'WORKSHOP: Reactive Programming with RxSwift': {
+      'Workshop: Advanced RxJS in Angular by Kwinten Pisman & Brecht Billiet': {
         'total': 0,
         'number': 0
       },
-      'WORKSHOP: Continuous Deployment: Automate your app release process with fastlane': {
+      'Workshop: NGRX Beginner to Master by Dominic Elm': {
         'total': 0,
         'number': 0
       },
+      'Workshop: Pimp your app for PWA by Lauri Svan': {
+        'total': 0,
+        'number': 0
+      },
+      'Workshop: Angular - The Awesome Parts by John Papa & Ward Bell': {
+        'total': 0,
+        'number': 0
+      },
+      'Workshop: ngGirls': {
+        'total': 0,
+        'number': 0
+      },
+
       'total': 0,
-      'number': 0
-    },
-    'people': {
-      'attendees': 0,
-      'organizers': 0,
-      'speakers': 0,
       'number': 0
     },
     'diet': {
@@ -149,7 +160,7 @@ var STATS = {
   },
   'tshirts': {
     'attendees': Object.assign({}, TSHIRTS),
-    'organizers': Object.assign({}, TSHIRTS),
+    'crew': Object.assign({}, TSHIRTS),
     'speakers': Object.assign({}, TSHIRTS),
     'black': Object.assign({}, TSHIRTS),
     'white': Object.assign({}, TSHIRTS),
@@ -159,7 +170,13 @@ var STATS = {
   'filteredByDate': 0
 }
 
+let workshopTicketOwners = []
+let conferenceTicketOwners = []
+
 function createParticipant (participant, programData) {
+
+  // console.log(participant)
+
   var firstName = participant['Ticket First Name'] || ''
   var lastName = participant['Ticket Last Name'] || ''
 
@@ -183,7 +200,7 @@ function createParticipant (participant, programData) {
 
   var tShirt = participant['T-shirt type & size']
 
-  var dietAnswer = participant['Do you have any dietary restrictions?'].trim()
+  var dietAnswer = participant['Do you have any special dietary requirements?'] ? participant['Do you have any special dietary requirements?'].trim() : null
 
   var diet = (dietAnswer === '-' || _.includes(DIET_STOP_LIST, dietAnswer)) ? null : dietAnswer
 
@@ -196,25 +213,35 @@ function createParticipant (participant, programData) {
 
   var modifiedDate = moment(participant['Ticket Last Updated Date'], 'MM/DD/YY'); // Last Updated | Created
 
-  var twitter = participant['Twitter handle to print on your badge'] !== '-' ? '@' + _.trimStart(participant['Twitter handle to print on your badge'], '@') : null
+console.log(participant['Twitter handle to print on your badge'])
+
+  var twitter = ( participant['Twitter handle to print on your badge'] && participant['Twitter handle to print on your badge'] !== '-' )  ? '@' + _.trimStart(participant['Twitter handle to print on your badge'].replace('https://twitter.com/', '').replace('https://github.com/', ''), '@') : null
+
+  console.log(twitter)
 
   if (company) {
     contactCard += ' of ' + company
   }
 
-  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Discounted') || ticketName.includes('Sponsor') || fullName == 'Erik Rose Johnsen' /* Client on stage */) {
+  if (ticketName.includes('Bird') || ticketName.includes('Student') || ticketName.includes('Conference')) {
     categoryName = 'Attendee'
 
     var confType = _.camelCase(ticketName)
 
-    if (confType == 'sponsorBlindBirdInvoiced') {
-      confType = 'blindBird'
-      discount = 'sponsorBlindBirdInvoiced'
+    if (ticketName.includes('Early')) {
+      confType = 'earlyBird'
     }
 
-    if (confType == 'speakerDiscountedTicket') {
-      confType = 'blindBird'
-      discount = 'speakerDiscountedTicket'
+    if (ticketName.includes('Late')) {
+      confType = 'lateBird'
+    }
+
+    if (ticketName.includes('Conference')) {
+      confType = 'regularBird'
+    }
+
+    if (ticketName.includes('Student') || ticketName.includes('student')) {
+      confType = 'student'
     }
 
     STATS.conf.tickets.number++
@@ -229,7 +256,7 @@ function createParticipant (participant, programData) {
       STATS.conf.tickets[confType].numberFree++
       STATS.conf.tickets[confType].number++
 
-    console.log('Free ticket with code/tag: ' +  ( discount ? discount : '' ) + ( participant['Tags'] ? participant['Tags'] : '' )  + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
+      console.log('Free ticket with code/tag: ' + (discount ? discount : '') + (participant['Tags'] ? participant['Tags'] : '') + ' ref: ' + participant['Ticket Reference'] + ' company: ' + participant['Ticket Company Name'])
     } else if (!discount) {
       STATS.conf.tickets[confType].numberRegular++
       STATS.conf.tickets[confType].number++
@@ -238,9 +265,6 @@ function createParticipant (participant, programData) {
       STATS.conf.tickets[confType].numberDiscounted++
       STATS.conf.tickets[confType].number++
       STATS.conf.tickets[confType].total += ticketPrice
-
-      // console.log('Discounted ticket with code: ' + participant['Order Discount Code'] + ' and price ' + ticketPrice + ' ref: ' + participant['Ticket Reference'])
-
     }
 
     STATS.tshirts.attendees[tShirt]++
@@ -258,33 +282,42 @@ function createParticipant (participant, programData) {
     if (referrer && (STATS.conf.referrer[referrer] === 0 || STATS.conf.referrer[referrer] > 0)) {
       STATS.conf.referrer[referrer]++
     }
-  } else if (ticketName.includes('WORKSHOP')) {
+
+    conferenceTicketOwners.push(email)
+
+  } else if (ticketName.includes('Workshop')) {
     categoryName = 'Trainee'
 
     STATS.workshops.tickets.number++
     STATS.workshops.tickets.total += ticketPrice
 
-    STATS.workshops.people.attendees++
-    STATS.workshops.people.number++
+    STATS.conf.people.trainees++
+    STATS.conf.people.number++
 
     STATS.total += ticketPrice
 
+    if (ticketName.includes('Liisa')) {
+      ticketName = 'Workshop: Angular - The Awesome Parts by John Papa & Ward Bell'
+    }
+
     STATS.workshops.tickets[ticketName].number++
     STATS.workshops.tickets[ticketName].total += ticketPrice
+
+    workshopTicketOwners.push(email)
 
     if (diet) {
       STATS.workshops.diet.list.push(diet)
       STATS.workshops.diet.number++
     }
-  } else if (ticketName === 'Crew ticket') {
-    categoryName = ( participant['Crew type'] == 'Organizer' ) ? participant['Crew type'] : 'Volunteer'
+  } else if (ticketName === 'Crew Ticket') {
+    categoryName = 'Crew'
 
-    STATS.conf.people.organizers++
+    STATS.conf.people.crew++
 
     STATS.conf.people.number++
 
-    STATS.tshirts.organizers[tShirt]++
-    STATS.tshirts.organizers.number++
+    STATS.tshirts.crew[tShirt]++
+    STATS.tshirts.crew.number++
     STATS.tshirts.number++
 
     STATS.tshirts.white[tShirt]++
@@ -300,27 +333,47 @@ function createParticipant (participant, programData) {
 
     STATS.conf.tickets['speakerTicket'].numberFree++
 
-    var speaker = programData.speakers.find(speaker => speaker.name == fullName
+
+    var speaker = programData.speakers.find(speaker => {
+      return speaker ? speaker['name'] == fullName : false
+    }
     )
     if (!speaker) {
       console.log("Can't find session for ", fullName)
     } else {
       sessionInfo.social = speaker.socials
-      var session = Object.values(programData.sessions).find(session => session.speakers.includes(speaker.id)
+      var session = Object.values(programData.sessions).find(session => {
+        return (session && session.speakers) ? session.speakers.includes(speaker.id) : false
+      }
       )
       if (!session) {
         console.log("Can't find session for ", fullName)
+        //sessionInfo.title = "Workshop: ngGirls"
       } else {
         sessionInfo.title = session.title
         var timeslot = null
         for (const day of programData.schedule) {
-          timeslot = day.timeslots.find(timeslot => [].concat.apply([], timeslot.sessions).includes(session.id))
-          if (timeslot) {  
-            sessionInfo.date = moment(day.date, 'YYYY-MM-DD').format('dddd'); //MMMM Do
+
+          let isFound = false
+          timeslot = day.timeslots.find(timeslot => {
+
+            let items = _.chain(timeslot.sessions)
+              .map('items')
+              .flatten()
+              .value()
+
+            return items.includes(parseInt(session.id))
+          })
+          if (timeslot) {
+            sessionInfo.date = moment(day.dateFormat, 'YYYY-MM-DD').format('dddd') // MMMM Do
             sessionInfo.startTime = timeslot.startTime
-            let flatSlots = timeslot.sessions.map(timeslot => {return timeslot[0]})
-            sessionInfo.track = TRACKS[flatSlots.indexOf(session.id)]
-            break;
+            let flatSlots = _.chain(timeslot.sessions)
+              .map('items')
+              .flatten()
+              .value()
+
+            sessionInfo.track = TRACKS[flatSlots.indexOf(parseInt(session.id))]
+            break
           }
         }
         if (!timeslot) {
@@ -360,7 +413,9 @@ function createParticipant (participant, programData) {
     ticketName,
     modifiedDate,
     twitter,
-    crewType}
+    crewType,
+    firstName,
+  lastName}
 }
 
 function participants (filename, filterOnType, startingDate, programData) {
@@ -380,7 +435,7 @@ function participants (filename, filterOnType, startingDate, programData) {
         STATS.filteredByDate++
         return true
       } else {
-        return true // hack
+        return false //  Set to false when filtering by date
       }
     } else {
       return true
@@ -392,7 +447,12 @@ function participants (filename, filterOnType, startingDate, programData) {
     return a.fullName.localeCompare(b.fullName)
   })
 
-  console.log(JSON.stringify(STATS, undefined, 2))
+   console.log(JSON.stringify(STATS, undefined, 2))
+
+
+    console.log('ONLY workshop attendees:');
+    console.log(JSON.stringify(_.difference(workshopTicketOwners, conferenceTicketOwners), undefined, 2));
+    
 
   return participantsProcessed
 }
